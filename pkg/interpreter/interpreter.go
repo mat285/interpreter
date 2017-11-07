@@ -64,6 +64,29 @@ func (i *Interpreter) mapFunc(f *parser.Function) error {
 	return nil
 }
 
+func (i *Interpreter) importCmd(input string) error {
+	file, err := getFileFromCommand(input)
+	if err != nil {
+		return err
+	}
+	cmds, err := load(file)
+	if err != nil {
+		return err
+	}
+	for _, cmd := range cmds {
+		i.interpret(cmd)
+	}
+	return nil
+}
+
+func (i *Interpreter) exportCmd(input string) error {
+	file, err := getFileFromCommand(input)
+	if err != nil {
+		return err
+	}
+	return save(file, i.Context)
+}
+
 func (i *Interpreter) run() {
 	defer func() {
 		err := recover()
@@ -79,51 +102,65 @@ func (i *Interpreter) run() {
 			continue
 		}
 		i.addToHistory(input)
-		if isEmpty(input) {
-			continue
-		} else if isHelp(input) {
-			fmt.Println(getHelpString())
-			continue
-		} else if isQuit(input) {
-			os.Exit(0)
-		} else if isHistory(input) {
-			fmt.Println(i.getHistory())
-			continue
-		} else if isClear(input) {
-			i.clear()
-			fmt.Println("Done")
-			continue
-		} else if isEnv(input) {
-			out := i.env()
-			if len(out) > 0 {
-				fmt.Println(out)
-			}
-			continue
-		} else if isFuncDef(input) {
-			f, err := parser.ParseFunction(input, i.Context)
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
-			err = i.mapFunc(f)
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
-			fmt.Println("OK", f.String())
-		} else {
-			input = strings.TrimSpace(input)
-			a, err := parser.Parse(input)
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
-			val, err := a.EvaluateFull(i.Context)
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
-			fmt.Println(val)
+		i.interpret(input)
+	}
+}
+
+func (i *Interpreter) interpret(input string) {
+	if isEmpty(input) {
+		return
+	} else if isHelp(input) {
+		fmt.Println(getHelpString())
+	} else if isQuit(input) {
+		os.Exit(0)
+	} else if isHistory(input) {
+		fmt.Println(i.getHistory())
+	} else if isClear(input) {
+		i.clear()
+		fmt.Println("Done")
+	} else if isImport(input) {
+		err := i.importCmd(input)
+		if err != nil {
+			fmt.Println(err)
+			return
 		}
+		fmt.Println("Done")
+	} else if isExport(input) {
+		err := i.exportCmd(input)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println("Done")
+	} else if isEnv(input) {
+		out := i.env()
+		if len(out) > 0 {
+			fmt.Println(out)
+		}
+	} else if isFuncDef(input) {
+		f, err := parser.ParseFunction(input, i.Context)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		err = i.mapFunc(f)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println("OK", f.String())
+	} else {
+		input = strings.TrimSpace(input)
+		a, err := parser.Parse(input)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		val, err := a.EvaluateFull(i.Context)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(val)
 	}
 }

@@ -1,6 +1,7 @@
 package interpreter
 
 import "strings"
+import "fmt"
 
 func sanitize(input string) string {
 	return strings.TrimSpace(strings.ToLower(input))
@@ -37,6 +38,25 @@ func isHistory(input string) bool {
 func isHelp(input string) bool {
 	str := sanitize(input)
 	return str == CommandHelp || str == CommandSyntax
+}
+
+func isImport(input string) bool {
+	str := sanitize(input) + " "
+	return strings.HasPrefix(str, CommandImport+" ")
+}
+
+func isExport(input string) bool {
+	str := sanitize(input) + " "
+	return strings.HasPrefix(str, CommandExport+" ")
+}
+
+func getFileFromCommand(input string) (string, error) {
+	input = sanitize(input)
+	parts := strings.SplitN(input, " ", 2)
+	if len(parts) != 2 {
+		return "", fmt.Errorf("Missing filename for %s. Syntax: %s [filename]", parts[0], parts[0])
+	}
+	return parts[1], nil
 }
 
 func getHelpString() string {

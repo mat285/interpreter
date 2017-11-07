@@ -19,6 +19,10 @@ const (
 	CommandHelp = "help"
 	// CommandSyntax is the syntax command
 	CommandSyntax = "syntax"
+	// CommandImport is the import command
+	CommandImport = "import"
+	// CommandExport is the export command
+	CommandExport = "export"
 )
 
 var (
@@ -33,5 +37,7 @@ var (
 		CommandHistory,
 		CommandHelp,
 		CommandSyntax,
+		CommandImport,
+		CommandExport,
 	}
 )

@@ -17,6 +17,26 @@ func NewContext() Context {
 	return make(Context)
 }
 
+// Clone clones the context
+func (c Context) Clone() Context {
+	ret := make(Context)
+	for k, v := range c {
+		ret[k] = v
+	}
+	return ret
+}
+
+// Source returns a source code string for the functions in this context
+func (c Context) Source() string {
+	ret := ""
+	for _, v := range c {
+		if v.Function != nil {
+			ret = fmt.Sprintf("%s\n", v.Function.Declaration())
+		}
+	}
+	return ret
+}
+
 func (c ContextVar) String() string {
 	if c.Symbol != nil {
 		return string(*c.Symbol)

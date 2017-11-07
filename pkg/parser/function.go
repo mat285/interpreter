@@ -19,9 +19,6 @@ type FunctionCall struct {
 	Inputs []ContextVar
 }
 
-// FunctionContext is a context of the known functions
-type FunctionContext map[string]*Function
-
 func (f *Function) mapInputs(inputs ...ContextVar) (map[string]ContextVar, error) {
 	if len(f.Inputs) != len(inputs) {
 		return nil, fmt.Errorf("Input length differs from give inputs. Expected %d inputs, found %d", len(f.Inputs), len(inputs))
@@ -60,6 +57,16 @@ func (f *Function) String() string {
 		name = *f.Name + " = "
 	}
 	return name + "func(" + strings.Join(f.Inputs, ",") + ") -> " + f.Body.String()
+}
+
+// Declaration returns a valid declaration for this function
+func (f *Function) Declaration() string {
+	if f.Name == nil {
+		return ""
+	}
+	args := strings.Join(f.Inputs, " ")
+	body := f.Body.String()
+	return fmt.Sprintf("%s %s %s = %s", KeywordLet, *f.Name, args, body)
 }
 
 // ParseFunction parses the input string as a function
