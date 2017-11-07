@@ -8,11 +8,14 @@ import (
 )
 
 const (
-	KeywordIf   = "if"
+	// KeywordIf is the keyword for if
+	KeywordIf = "if"
+	// KeywordThen is the keyword for then
 	KeywordThen = "then"
+	// KeywordElse is the keyword for else
 	KeywordElse = "else"
-	KeywordEnd  = "end"
-	KeywordLet  = "let"
+	// KeywordLet is the keyword for let
+	KeywordLet = "let"
 )
 
 // Expression is an expression
@@ -49,74 +52,6 @@ type Symbol string
 
 // Value is a value
 type Value int
-
-// ContextVar is a type that can be a symbol or a value
-type ContextVar struct {
-	*Symbol
-	*Value
-	*Function
-}
-
-func (c ContextVar) String() string {
-	if c.Symbol != nil {
-		return string(*c.Symbol)
-	}
-	if c.Value != nil {
-		return fmt.Sprintf("%d", *c.Value)
-	}
-	if c.Function != nil {
-		return *c.Function.Name
-	}
-	return "" // make clearer
-}
-
-// FromSymbol returns a Symbol ContextVar
-func FromSymbol(s *Symbol) ContextVar {
-	return ContextVar{s, nil, nil}
-}
-
-// FromValue returns a Value ContextVar
-func FromValue(v *Value) ContextVar {
-	return ContextVar{nil, v, nil}
-}
-
-// FromFunc Creates a context var from a function
-func FromFunc(f *Function) ContextVar {
-	return ContextVar{nil, nil, f}
-}
-
-// FromIntMap transforms the int map into t symbolvalue map
-func FromIntMap(input map[string]int) map[string]ContextVar {
-	ret := make(map[string]ContextVar)
-	for k, v := range input {
-		val := Value(v)
-		ret[k] = FromValue(&val)
-	}
-	return ret
-}
-
-// FromFuncMap returns a context map from func map
-func FromFuncMap(input map[string]*Function) map[string]ContextVar {
-	ret := make(map[string]ContextVar)
-	for k, v := range input {
-		ret[k] = FromFunc(v)
-	}
-	return ret
-}
-
-// StitchContext stitches the local and global context with local over global
-func StitchContext(local map[string]ContextVar, global map[string]ContextVar) map[string]ContextVar {
-	ret := make(map[string]ContextVar)
-	for k, v := range local {
-		ret[k] = v
-	}
-	for k, v := range global {
-		if _, ok := ret[k]; !ok {
-			ret[k] = v
-		}
-	}
-	return ret
-}
 
 // String returns a string representation of this expresion
 func (exp *Expression) String() string {
@@ -164,7 +99,8 @@ func (exp *Expression) String() string {
 	return str
 }
 
-func evaluate(exp *Expression, table map[string]ContextVar) *Expression {
+// Evaluate evaluates the expression with the given context
+func (exp *Expression) Evaluate(context Context) *Expression {
 	if exp.Val != nil {
 		u := *exp.Val
 		v := int(u)
@@ -175,7 +111,7 @@ func evaluate(exp *Expression, table map[string]ContextVar) *Expression {
 		return &Expression{Val: &val}
 	}
 	if exp.Symbol != nil {
-		if v, ok := table[string(*exp.Symbol)]; ok {
+		if v, ok := context[string(*exp.Symbol)]; ok {
 			if v.Value != nil {
 				val := Value(*v.Value)
 				if exp.Negate {
@@ -194,29 +130,29 @@ func evaluate(exp *Expression, table map[string]ContextVar) *Expression {
 	}
 
 	if exp.Conditional != nil {
-		pred := evaluate(exp.Conditional.Predicate, table)
+		pred := exp.Conditional.Predicate.Evaluate(context)
 		if pred.Val != nil {
 			v := int(*pred.Val)
 			if v != 0 {
-				return evaluate(exp.Conditional.True, table)
+				return exp.Conditional.True.Evaluate(context)
 			}
-			return evaluate(exp.Conditional.False, table)
+			return exp.Conditional.False.Evaluate(context)
 		}
 	}
 
 	if exp.Functional != nil {
-		fn, ok := table[exp.Functional.Name]
+		fn, ok := context[exp.Functional.Name]
 		inputs := []*Expression{}
 		vals := []ContextVar{}
 		for _, arg := range exp.Functional.Inputs {
-			input := evaluate(arg, table)
+			input := arg.Evaluate(context)
 			inputs = append(inputs, input)
 			if input.Val != nil {
 				vals = append(vals, FromValue(input.Val))
 			}
 		}
 		if len(vals) == len(inputs) && ok {
-			val, err := fn.Evaluate(table, vals...)
+			val, err := fn.Evaluate(context, vals...)
 			if err == nil {
 				v := Value(val)
 				return &Expression{Val: &v}
@@ -230,8 +166,8 @@ func evaluate(exp *Expression, table map[string]ContextVar) *Expression {
 		return &Expression{Functional: fu}
 	}
 
-	l := evaluate(exp.Left, table)
-	r := evaluate(exp.Right, table)
+	l := exp.Left.Evaluate(context)
+	r := exp.Right.Evaluate(context)
 	o := *exp.Op
 	if l.Val != nil && r.Val != nil {
 		lv := *l.Val

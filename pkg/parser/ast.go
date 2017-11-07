@@ -36,7 +36,7 @@ func (a *AST) Evaluate(table ...map[string]ContextVar) *Expression {
 	if len(table) > 0 && table[0] != nil {
 		t = table[0]
 	}
-	return evaluate(a.Root, t)
+	return a.Root.Evaluate(t)
 }
 
 // EvaluateFull evaluates this expression down to in an int if possible, or fails
