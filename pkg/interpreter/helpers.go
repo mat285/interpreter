@@ -60,5 +60,5 @@ func getFileFromCommand(input string) (string, error) {
 }
 
 func getHelpString() string {
-	return "Syntax:\nFuncDefs: `let [func name] [arg1] [arg2] ... = [expression]\nCalculation: [do | eval] [expression without vars]\nFuncCall [func name]([arg1],[arg2],...)\nOther: help, exit"
+	return "Syntax:\nFuncDefs: `let [func name] [arg1] [arg2] ... = [expression]\n[expression without vars]\nimport/export [filename]\nOther: help, exit, quit, history, clear"
 }

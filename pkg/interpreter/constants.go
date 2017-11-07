@@ -1,7 +1,8 @@
 package interpreter
 
 const (
-	linePrompt = ">"
+	linePrompt  = ">"
+	successDone = "Done"
 
 	// CommandQuit is the quit command
 	CommandQuit = "quit"

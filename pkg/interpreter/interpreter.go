@@ -25,7 +25,7 @@ func New() *Interpreter {
 
 // Start starts the interpreter
 func (i *Interpreter) Start() {
-	fmt.Println("Started functional interpreter with new environment. Use quit or exit to end session")
+	fmt.Println("Started functional interpreter with new environment. Use quit or exit to end session. Use help for more information")
 	for {
 		i.run()
 	}
@@ -117,21 +117,21 @@ func (i *Interpreter) interpret(input string) {
 		fmt.Println(i.getHistory())
 	} else if isClear(input) {
 		i.clear()
-		fmt.Println("Done")
+		fmt.Println(successDone)
 	} else if isImport(input) {
 		err := i.importCmd(input)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println("Done")
+		fmt.Println(successDone)
 	} else if isExport(input) {
 		err := i.exportCmd(input)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println("Done")
+		fmt.Println(successDone)
 	} else if isEnv(input) {
 		out := i.env()
 		if len(out) > 0 {
