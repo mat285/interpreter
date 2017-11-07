@@ -203,7 +203,7 @@ func parse(runes []rune, startIdx int, onlyFirst bool) (*Expression, int, error)
 	// 0: beginning of string
 	// 1: have left expression, find op and parse right
 	// 2: parsed value
-	// 3: inside if
+	// 3: parsing function
 	state := 0
 
 	for i := 0; i < len(runes); i++ {
@@ -417,6 +417,9 @@ func parseSymbol(runes []rune, startIdx int) (*Expression, int, error) {
 	}
 	e := &Expression{}
 	sym := Symbol(string(runes[:idx]))
+	if isReserved(string(sym)) {
+		return nil, -1, fmt.Errorf("Invalid identifier. `%s` is a reserved word", string(sym))
+	}
 	e.Symbol = &sym
 	return e, idx, nil
 }
