@@ -4,7 +4,14 @@ import (
 	"fmt"
 )
 
-func parseIfStatement(runes []rune, startIdx int) (*Expression, int, error) {
+// Conditional is a conditional expression
+type Conditional struct {
+	Predicate *Expression
+	True      *Expression
+	False     *Expression
+}
+
+func parseConditional(runes []rune, startIdx int) (*Expression, int, error) {
 	lenIf := len([]rune(KeywordIf))
 	lenThen := len([]rune(KeywordThen))
 	lenElse := len([]rune(KeywordElse))

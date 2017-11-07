@@ -8,3 +8,20 @@ func isReserved(s string) bool {
 	}
 	return false
 }
+
+// find the index with the close parens
+func findParens(runes []rune) int {
+	depth := 0
+	for i, r := range runes {
+		if r == '(' {
+			depth++
+		} else if r == ')' {
+			depth--
+		}
+
+		if depth == 0 {
+			return i
+		}
+	}
+	return -1
+}

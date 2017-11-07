@@ -23,24 +23,11 @@ type Expression struct {
 	Functional  *Functional
 }
 
-// Conditional is a conditional expression
-type Conditional struct {
-	Predicate *Expression
-	True      *Expression
-	False     *Expression
-}
-
 // Functional is a function call expression
 type Functional struct {
 	Name   string
 	Inputs []*Expression
 }
-
-// Symbol is a variable
-type Symbol string
-
-// Value is a value
-type Value int
 
 // String returns a string representation of this expresion
 func (exp *Expression) String() string {
@@ -214,7 +201,7 @@ func parse(runes []rune, startIdx int, onlyFirst bool) (*Expression, int, error)
 			if unicode.IsSpace(r) {
 				continue
 			} else if r == 'i' && i+2 < len(runes) && runes[i+1] == 'f' && unicode.IsSpace(runes[i+2]) {
-				l, idx, err := parseIfStatement(runes[i:], i+startIdx)
+				l, idx, err := parseConditional(runes[i:], i+startIdx)
 				if err != nil {
 					return nil, 0, err
 				}
@@ -394,82 +381,6 @@ func parse(runes []rune, startIdx int, onlyFirst bool) (*Expression, int, error)
 		}
 	}
 	return left, len(runes) + startIdx, nil
-}
-
-func parseSymbol(runes []rune, startIdx int) (*Expression, int, error) {
-	idx := 0
-	for i, r := range runes {
-		idx = i
-		if unicode.IsLetter(r) {
-			continue
-		} else if unicode.IsSpace(r) {
-			break
-		} else if r == '(' || r == '-' {
-			break
-		} else if isOp(r) {
-			break
-		} else {
-			return nil, -1, invalidSymbolError(r, startIdx+i)
-		}
-	}
-	if idx == len(runes)-1 && unicode.IsLetter(runes[idx]) {
-		idx = len(runes)
-	}
-	e := &Expression{}
-	sym := Symbol(string(runes[:idx]))
-	if isReserved(string(sym)) {
-		return nil, -1, fmt.Errorf("Invalid identifier. `%s` is a reserved word", string(sym))
-	}
-	e.Symbol = &sym
-	return e, idx, nil
-}
-
-func parseValue(runes []rune, startIdx int) (*Expression, int, error) {
-	idx := 0
-	for i, r := range runes {
-		idx = i
-		if unicode.IsDigit(r) {
-			continue
-		} else if unicode.IsSpace(r) {
-			break
-		} else if unicode.IsLetter(r) {
-			break
-		} else if isOp(r) {
-			break
-		} else if r == '(' || r == '-' {
-			break
-		} else {
-			return nil, -1, invalidSymbolError(r, startIdx+i)
-		}
-	}
-	if idx == len(runes)-1 && unicode.IsDigit(runes[idx]) {
-		idx++
-	}
-	e := &Expression{}
-	u, err := strconv.Atoi(string(runes[:idx]))
-	if err != nil {
-		return nil, -1, err
-	}
-	val := Value(u)
-	e.Val = &val
-	return e, idx, nil
-}
-
-// find the index with the close parens
-func findParens(runes []rune) int {
-	depth := 0
-	for i, r := range runes {
-		if r == '(' {
-			depth++
-		} else if r == ')' {
-			depth--
-		}
-
-		if depth == 0 {
-			return i
-		}
-	}
-	return -1
 }
 
 func parseFunctionalArgs(runes []rune, startIdx int) (*Functional, error) {
