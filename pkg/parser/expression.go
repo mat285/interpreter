@@ -507,5 +507,5 @@ func parseFunctionalArgs(runes []rune, startIdx int) (*Functional, error) {
 }
 
 func invalidSymbolError(r rune, idx int) error {
-	panic(fmt.Errorf("Invalid symbol `%c` at index %d of expression", r, idx))
+	return fmt.Errorf("Invalid symbol `%c` at index %d of expression", r, idx)
 }
