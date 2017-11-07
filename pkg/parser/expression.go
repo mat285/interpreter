@@ -7,17 +7,6 @@ import (
 	"unicode"
 )
 
-const (
-	// KeywordIf is the keyword for if
-	KeywordIf = "if"
-	// KeywordThen is the keyword for then
-	KeywordThen = "then"
-	// KeywordElse is the keyword for else
-	KeywordElse = "else"
-	// KeywordLet is the keyword for let
-	KeywordLet = "let"
-)
-
 // Expression is an expression
 type Expression struct {
 	Symbol *Symbol

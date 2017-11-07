@@ -22,9 +22,6 @@ type FunctionCall struct {
 // FunctionContext is a context of the known functions
 type FunctionContext map[string]*Function
 
-// Keywords are reserved words
-var Keywords = []string{"let"}
-
 func (f *Function) mapInputs(inputs ...ContextVar) (map[string]ContextVar, error) {
 	if len(f.Inputs) != len(inputs) {
 		return nil, fmt.Errorf("Input length differs from give inputs. Expected %d inputs, found %d", len(f.Inputs), len(inputs))

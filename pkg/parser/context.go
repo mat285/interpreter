@@ -12,6 +12,11 @@ type ContextVar struct {
 	*Function
 }
 
+// NewContext creates a new context
+func NewContext() Context {
+	return make(Context)
+}
+
 func (c ContextVar) String() string {
 	if c.Symbol != nil {
 		return string(*c.Symbol)
@@ -20,7 +25,7 @@ func (c ContextVar) String() string {
 		return fmt.Sprintf("%d", *c.Value)
 	}
 	if c.Function != nil {
-		return *c.Function.Name
+		return c.Function.String()
 	}
 	return "" // make clearer
 }
