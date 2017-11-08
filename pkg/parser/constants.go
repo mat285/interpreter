@@ -9,6 +9,8 @@ const (
 	KeywordElse = "else"
 	// KeywordLet is the keyword for let
 	KeywordLet = "let"
+
+	maxRecursiveCalls = 2 << 20
 )
 
 var (
