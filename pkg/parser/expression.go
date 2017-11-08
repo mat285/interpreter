@@ -212,7 +212,7 @@ func parse(runes []rune, startIdx int, onlyFirst bool) (*Expression, int, error)
 				// we have a parenthetical expression
 				// find the close paren
 				close := findParens(runes[i:])
-				if close < i {
+				if close < 0 {
 					return nil, -1, fmt.Errorf("Unmatched parenthesis in expression")
 				}
 				// parse the inner expression and make it the left side
@@ -361,7 +361,7 @@ func parse(runes []rune, startIdx int, onlyFirst bool) (*Expression, int, error)
 			if r == '(' {
 				// parse a function
 				close := findParens(runes[i:])
-				if close < i {
+				if close < 0 {
 					return nil, -1, fmt.Errorf("Unmatched parenthesis in expression")
 				}
 

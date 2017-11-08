@@ -1,7 +1,10 @@
 package interpreter
 
-import "strings"
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"strings"
+)
 
 func sanitize(input string) string {
 	return strings.TrimSpace(strings.ToLower(input))
@@ -61,4 +64,11 @@ func getFileFromCommand(input string) (string, error) {
 
 func getHelpString() string {
 	return "Syntax:\nFuncDefs: `let [func name] [arg1] [arg2] ... = [expression]\n[expression without vars]\nimport/export [filename]\nOther: help, exit, quit, history, clear"
+}
+
+func flush(reader *bufio.Reader) {
+	var i int
+	for i = 0; i < reader.Buffered(); i++ {
+		reader.ReadByte()
+	}
 }

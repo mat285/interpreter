@@ -95,6 +95,7 @@ func (i *Interpreter) run() {
 
 	for {
 		reader := bufio.NewReader(os.Stdin)
+		flush(reader)
 		fmt.Print(linePrompt)
 		input, err := reader.ReadString('\n')
 		if err != nil {
