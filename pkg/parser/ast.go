@@ -30,18 +30,40 @@ func (a *AST) Symbols() []string {
 	return syms
 }
 
-// Evaluate evaluates the tree with the given symbol value map
-func (a *AST) Evaluate(table ...map[string]ContextVar) *Expression {
-	t := make(map[string]ContextVar)
+// eval evaluates the tree with the given symbol value map
+func (a *AST) eval(table ...Context) *Expression {
+	t := make(Context)
 	if len(table) > 0 && table[0] != nil {
 		t = table[0]
 	}
 	return a.Root.Evaluate(t)
 }
 
+// Evaluate evaluates the tree with the given context
+func (a *AST) Evaluate(table ...Context) *Expression {
+	t := make(Context)
+	if len(table) > 0 && table[0] != nil {
+		t = table[0]
+	}
+	exp := a.Root.Evaluate(t)
+	for exp.deferred != nil {
+		exp = exp.deferred.Eval(t)
+	}
+	return exp
+}
+
 // EvaluateFull evaluates this expression down to in an int if possible, or fails
-func (a *AST) EvaluateFull(table ...map[string]ContextVar) (int, error) {
+func (a *AST) EvaluateFull(table ...Context) (int, error) {
 	exp := a.Evaluate(table...)
+	if exp == nil || exp.Val == nil {
+		return -1, fmt.Errorf("Could not fully evaluate the expression. Variables still remain: %s", exp.String())
+	}
+	return int(*exp.Val), nil
+}
+
+// evaluateFull evaluates this expression down to in an int if possible, or fails
+func (a *AST) evalFull(table ...Context) (int, error) {
+	exp := a.eval(table...)
 	if exp == nil || exp.Val == nil {
 		return -1, fmt.Errorf("Could not fully evaluate the expression. Variables still remain: %s", exp.String())
 	}

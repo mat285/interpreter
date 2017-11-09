@@ -50,6 +50,26 @@ func (c ContextVar) String() string {
 	return "" // make clearer
 }
 
+// ToExpression converts a context var to an expression
+func ToExpression(v ContextVar) *Expression {
+	if v.Symbol != nil {
+		return &Expression{Symbol: v.Symbol}
+	}
+	if v.Value != nil {
+		return &Expression{Val: v.Value}
+	}
+	syms := []*Expression{}
+	for _, s := range v.Function.Inputs {
+		sym := Symbol(s)
+		syms = append(syms, &Expression{Symbol: &sym})
+	}
+	fn := &Functional{
+		Name:   *v.Function.Name,
+		Inputs: syms,
+	}
+	return &Expression{Functional: fn}
+}
+
 // FromSymbol returns a Symbol ContextVar
 func FromSymbol(s *Symbol) ContextVar {
 	return ContextVar{s, nil, nil}

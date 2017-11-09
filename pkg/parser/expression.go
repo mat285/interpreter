@@ -21,6 +21,9 @@ type Expression struct {
 
 	Conditional *Conditional
 	Functional  *Functional
+
+	// deferred is for internal use, not for actual expressions
+	deferred *DeferredEval
 }
 
 // Functional is a function call expression
@@ -77,6 +80,8 @@ func (exp *Expression) String() string {
 
 // Evaluate evaluates the expression with the given context
 func (exp *Expression) Evaluate(context Context) *Expression {
+	checkMem()
+	defer releaseMem()
 	if exp.Val != nil {
 		u := *exp.Val
 		v := int(u)
@@ -128,11 +133,13 @@ func (exp *Expression) Evaluate(context Context) *Expression {
 			}
 		}
 		if len(vals) == len(inputs) && ok {
-			val, err := fn.Evaluate(context, vals...)
-			if err == nil {
-				v := Value(val)
-				return &Expression{Val: &v}
-			}
+			d := &DeferredEval{Function: fn.Function, Inputs: vals}
+			// val, err := fn.Evaluate(context, vals...)
+			// if err == nil {
+			// 	v := Value(val)
+			// 	return &Expression{Val: &v}
+			// }
+			return &Expression{deferred: d}
 		}
 		fu := &Functional{
 			Name:   exp.Functional.Name,
@@ -143,7 +150,21 @@ func (exp *Expression) Evaluate(context Context) *Expression {
 	}
 
 	l := exp.Left.Evaluate(context)
+	if l.deferred != nil {
+		v, err := l.deferred.Function.Evaluate(context, l.deferred.Inputs...)
+		if err == nil {
+			val := Value(v)
+			l = &Expression{Val: &val}
+		}
+	}
 	r := exp.Right.Evaluate(context)
+	if r.deferred != nil {
+		v, err := r.deferred.Function.Evaluate(context, r.deferred.Inputs...)
+		if err == nil {
+			val := Value(v)
+			r = &Expression{Val: &val}
+		}
+	}
 	o := *exp.Op
 	if l.Val != nil && r.Val != nil {
 		lv := *l.Val

@@ -1,5 +1,7 @@
 package parser
 
+var stackCalls = 0
+
 func isReserved(s string) bool {
 	for _, k := range Keywords {
 		if s == k {
@@ -24,4 +26,15 @@ func findParens(runes []rune) int {
 		}
 	}
 	return -1
+}
+
+func checkMem() {
+	stackCalls++
+	if stackCalls >= maxStackCalls {
+		panic("stack overflow: too many recursive calls")
+	}
+}
+
+func releaseMem() {
+	stackCalls--
 }

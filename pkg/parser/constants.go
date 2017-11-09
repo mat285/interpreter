@@ -10,7 +10,7 @@ const (
 	// KeywordLet is the keyword for let
 	KeywordLet = "let"
 
-	maxRecursiveCalls = 2 << 20
+	maxStackCalls = 500000
 )
 
 var (

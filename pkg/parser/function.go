@@ -19,6 +19,12 @@ type FunctionCall struct {
 	Inputs []ContextVar
 }
 
+// DeferredEval is a deferred function eval
+type DeferredEval struct {
+	Function *Function
+	Inputs   []ContextVar
+}
+
 func (f *Function) mapInputs(inputs ...ContextVar) (map[string]ContextVar, error) {
 	if len(f.Inputs) != len(inputs) {
 		return nil, fmt.Errorf("Input length differs from give inputs. Expected %d inputs, found %d", len(f.Inputs), len(inputs))
@@ -31,23 +37,29 @@ func (f *Function) mapInputs(inputs ...ContextVar) (map[string]ContextVar, error
 }
 
 // Evaluate fully evaluates the function, and errors otherwise
-func (f *Function) Evaluate(context map[string]ContextVar, inputs ...ContextVar) (int, error) {
+func (f *Function) Evaluate(context Context, inputs ...ContextVar) (int, error) {
 	local, err := f.mapInputs(inputs...)
 	if err != nil {
 		return -1, err
 	}
-	return f.Body.EvaluateFull(StitchContext(local, context))
+	return f.Body.evalFull(StitchContext(local, context))
 }
 
 // PartialEval partially evaluates the function into another function
-func (f *Function) PartialEval(context map[string]ContextVar, inputs ...ContextVar) (*Function, error) {
+func (f *Function) PartialEval(context Context, inputs ...ContextVar) (*Function, error) {
 	local, err := f.mapInputs(inputs...)
 	if err != nil {
 		return nil, err
 	}
-	exp := f.Body.Evaluate(StitchContext(local, context))
+	exp := f.Body.eval(StitchContext(local, context))
 
 	return &Function{Body: &AST{Root: exp}, Inputs: f.Inputs[len(inputs):]}, nil
+}
+
+// Eval evaluates deferred function call
+func (f *DeferredEval) Eval(context Context) *Expression {
+	fn, _ := f.Function.PartialEval(context, f.Inputs...)
+	return fn.Body.Root
 }
 
 // String returns a string representation of this function
