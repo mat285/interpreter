@@ -157,11 +157,12 @@ func (i *Interpreter) interpret(input string) {
 			fmt.Println(err)
 			return
 		}
-		val, err := a.EvaluateFull(i.Context)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		fmt.Println(val)
+		doAndListen(a, i.Context.Clone())
+		// val, err := a.EvaluateFull(i.Context)
+		// if err != nil {
+		// 	fmt.Println(err)
+		// 	return
+		// }
+		// fmt.Println(val)
 	}
 }

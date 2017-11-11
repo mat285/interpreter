@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"strings"
+
+	"github.com/mat285/interpreter/pkg/parser"
 )
 
 func sanitize(input string) string {
@@ -71,4 +73,44 @@ func flush(reader *bufio.Reader) {
 	for i = 0; i < reader.Buffered(); i++ {
 		reader.ReadByte()
 	}
+}
+
+type result struct {
+	val int
+	err error
+}
+
+func doAndListen(a *parser.AST, context parser.Context) {
+	quit := make(chan int)
+	res := make(chan *result)
+
+	go listenForQuit(quit)
+	go runEvaluation(a, context, res)
+	select {
+	case <-quit:
+		panic("interrupted")
+	case r := <-res:
+		if r.err != nil {
+			panic(r.err)
+		}
+		fmt.Println(r.val)
+		return
+	}
+}
+
+func listenForQuit(quit chan int) {
+	for {
+		// listen for kill signal and push to channel
+	}
+}
+
+func runEvaluation(a *parser.AST, context parser.Context, res chan *result) {
+	defer func() {
+		err := recover()
+		if err != nil {
+			res <- &result{err: fmt.Errorf("%v", err)}
+		}
+	}()
+	val, err := a.EvaluateFull(context)
+	res <- &result{val: val, err: err}
 }
